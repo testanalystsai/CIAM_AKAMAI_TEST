@@ -9,7 +9,7 @@
 .factorypath
 .project
 .settings
-.springBeans
+.springBean s
 .sts4-cache
 /allure-result/
 */allure-result/**
