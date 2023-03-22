@@ -5,13 +5,19 @@ import com.microsoft.playwright.Page;
 import com.models.DataModel;
 import com.playwrightfactory.PlaywrightFactory;
 import io.qameta.allure.Step;
+import io.restassured.mapper.ObjectMapper;
+import io.restassured.mapper.ObjectMapperDeserializationContext;
+import io.restassured.mapper.ObjectMapperSerializationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.TestInstance;
 import org.testng.asserts.SoftAssert;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +34,9 @@ public void processID(DataModel model) throws IOException, ParseException, Inter
             processEachID(model.getOdiurl().trim(),url,ids);
         }
         System.out.println(errorID);
+        writeErrors(errorID);
+        softAssert.assertAll();
+
     }
     @Step("Process the ODI URL : {odiUrl} and ID : {data}")
     private void processEachID(String odiUrl, String url, Map.Entry<String,String>data) throws InterruptedException {
@@ -47,6 +56,8 @@ public void processID(DataModel model) throws IOException, ParseException, Inter
         //softAssert.assertEquals(true,locator.isVisible());
         if(status.size()==0){
             errorID.put(data.getKey(), data.getValue());
+
+            softAssert.assertEquals(1,status.size(),"In valid url: "+odiUrl+" name: "+data.getValue());
         }
 
         PlaywrightFactory.closePage();
@@ -80,6 +91,18 @@ public void processID(DataModel model) throws IOException, ParseException, Inter
 
         }
         return status;
+
+    }
+
+    public void writeErrors(Map<String ,String >errorsList) throws IOException {
+        File file=new File("Error.txt");
+        FileWriter writer=new FileWriter(file);
+        PrintWriter pw=new PrintWriter(writer);
+
+        pw.println(errorsList);
+        pw.flush();
+        pw.close();
+        writer.close();
 
     }
 }
