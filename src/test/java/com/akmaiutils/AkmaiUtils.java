@@ -40,27 +40,35 @@ public void processID(DataModel model) throws IOException, ParseException, Inter
     }
     @Step("Process the ODI URL : {odiUrl} and ID : {data}")
     private void processEachID(String odiUrl, String url, Map.Entry<String,String>data) throws InterruptedException {
-        Page page=PlaywrightFactory.getPage();
-        page.navigate(url);
-        page.locator("#oidc-url").type(odiUrl);
-        page.locator("//span[text()='Next']").click();
-        page.locator("#oidc-client-id").type(data.getKey());
-        System.out.println(data.getKey());
-        page.locator("//span[text()='Next']").click();
-        page.locator("//span[text()='Next']").click();
-        page.locator("(//span[text()='Finish'])[1]").click();
-        page.locator("//span[text()='Start']").click();
-        //Locator locator=page.locator("#capture_signIn_emailOrMobileNumberMultiIdentifierField");
-        Thread.sleep(3000);
-        List<Boolean> status=checkUI(page);
-        //softAssert.assertEquals(true,locator.isVisible());
-        if(status.size()==0){
-            errorID.put(data.getKey(), data.getValue());
+        List<Boolean> status=new ArrayList<>();
+        try {
+            Page page = PlaywrightFactory.getPage();
+            page.navigate(url);
+            page.locator("#oidc-url").type(odiUrl);
+            page.locator("//span[text()='Next']").click();
+            page.locator("#oidc-client-id").type(data.getKey());
+            System.out.println(data.getKey());
+            page.locator("//span[text()='Next']").click();
+            page.locator("//span[text()='Next']").click();
+            page.locator("(//span[text()='Finish'])[1]").click();
+            page.locator("//span[text()='Start']").click();
+            //Locator locator=page.locator("#capture_signIn_emailOrMobileNumberMultiIdentifierField");
+            Thread.sleep(3000);
+            status = checkUI(page);
+            //softAssert.assertEquals(true,locator.isVisible());
+            if (status.size() == 0) {
+                errorID.put(data.getKey(), data.getValue());
 
-            softAssert.assertEquals(1,status.size(),"In valid url: "+odiUrl+" name: "+data.getValue());
+                softAssert.assertEquals(1, status.size(), "In valid url: " + odiUrl + " name: " + data.getValue());
+            }
+        }catch (Exception e){
+            errorID.put(data.getKey(), data.getValue());
+            softAssert.assertEquals(1, status.size(), "In valid url: " + odiUrl + " name: " + data.getValue());
+        }finally {
+            PlaywrightFactory.closePage();
         }
 
-        PlaywrightFactory.closePage();
+
     }
 
 
